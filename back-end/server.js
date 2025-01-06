@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcrypt'); // Import bcrypt
 const app = express();
 const port = 8000;
 const connectDB = require('./db/dbConnection');
@@ -7,8 +8,9 @@ const cors = require('cors');
 
 // Middleware for parsing JSON data
 app.use(express.json());
-//enable cors
-app.use(cors())
+// Enable CORS
+app.use(cors());
+
 // Registration route
 app.post('/register', async (req, res) => {
     const { username, password, name, email, university } = req.body;
@@ -39,30 +41,32 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Login route
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
 
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
 
+        // Compare the entered password with the hashed password in the database
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        res.status(200).json({ message: 'Login successful' });
+    } catch (error) {
+        res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+// Connect to the database
 connectDB();
+
+// Start the server
 app.listen(port, () => {
     console.log('Server is listening on Port 8000');
 });
-
-
-//login
-app.post('/login',async(req,res)=>{
-    try{
-        const{username,password} = req.body;
-        const user = await User.findOne({username});
-        
-
-        if(!user){
-            return res.status(401).json({error:'Invalid username or password'});
-        }
-        if(user.password !== password){
-            return res.status(401).json({error:'Invalid username or password'});
-        }
-        res.status(200).json({message:'Login successful'})
-    }
-    catch(error){
-        res.status(500).json({error:'Login failed'})
-    }
-})
