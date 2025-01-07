@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Modal from 'react-modal'; // Import modal
 import './RegistrationPage.css'; // Ensure path is correct
@@ -8,7 +8,7 @@ Modal.setAppElement('#root');
 
 const RegistrationPage = () => {
   const [registrationData, setRegistrationData] = useState({
-    username: '', // Added username field
+    username: '',
     name: '',
     email: '',
     password: '',
@@ -20,41 +20,25 @@ const RegistrationPage = () => {
   const [isTermsAccepted, setIsTermsAccepted] = useState(false); // State for checkbox
   const [errorMessage, setErrorMessage] = useState(''); // State for error message
   const [successMessage, setSuccessMessage] = useState(''); // State for success message
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
+  const navigate = useNavigate(); // Navigation hook
 
   const handleRegistrationSubmit = async (e) => {
     e.preventDefault();
-
-    // Check if terms are accepted
-    if (!isTermsAccepted) {
-      setErrorMessage('Please read the terms and conditions and click on the checkbox.');
-      return;
-    }
-
-    // Check if password and confirm password match
     if (registrationData.password !== registrationData.confirmPassword) {
       setErrorMessage('Passwords do not match.');
       return;
     }
-
     try {
       const response = await axios.post('http://localhost:8000/register', registrationData);
       setSuccessMessage(response.data.message || 'Registration successful!');
-      setErrorMessage(''); // Clear error message on success
+      setErrorMessage('');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
-      setSuccessMessage('');
-      setErrorMessage(error.response?.data?.error || 'An error occurred. Please try again.');
+      setErrorMessage(error.response?.data?.error || 'An error occurred.');
     }
-
-    // Reset the form fields
-    setRegistrationData({
-      username: '',
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      university: '',
-    });
   };
+  
 
   const handleRegistrationChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +51,10 @@ const RegistrationPage = () => {
   const handleCheckboxChange = () => {
     setIsTermsAccepted(!isTermsAccepted);
     setErrorMessage(''); // Clear error message when checkbox is clicked
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevState) => !prevState);
   };
 
   const openModal = () => setIsModalOpen(true);
@@ -110,22 +98,38 @@ const RegistrationPage = () => {
             onChange={handleRegistrationChange}
             required
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={registrationData.password}
-            onChange={handleRegistrationChange}
-            required
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Retype Password"
-            value={registrationData.confirmPassword}
-            onChange={handleRegistrationChange}
-            required
-          />
+          <div className="password-container">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="Password"
+              value={registrationData.password}
+              onChange={handleRegistrationChange}
+              required
+            />
+            <span
+              onClick={togglePasswordVisibility}
+              style={{ marginLeft: '10px', cursor: 'pointer', color: 'blue' }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </span>
+          </div>
+          <div className="password-container">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="confirmPassword"
+              placeholder="Retype Password"
+              value={registrationData.confirmPassword}
+              onChange={handleRegistrationChange}
+              required
+            />
+            <span
+              onClick={togglePasswordVisibility}
+              style={{ marginLeft: '10px', cursor: 'pointer', color: 'blue' }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </span>
+          </div>
           <div className="terms">
             <input
               type="checkbox"
@@ -146,7 +150,6 @@ const RegistrationPage = () => {
           </button>
         </form>
 
-        {/* Show error and success messages */}
         {errorMessage && <p className="error-message" style={{ color: 'red' }}>{errorMessage}</p>}
         {successMessage && <p className="success-message" style={{ color: 'green' }}>{successMessage}</p>}
 
