@@ -245,6 +245,136 @@ app.post('/log-error', async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to log error', details: error.message });
     }
 });
+/** 
+ * API: Fetch Students with Filters 
+ * Filters: semester, type, payment, registered
+ */
+app.get('/students', async (req, res) => {
+    try {
+        const { semester, type, payment, registered } = req.query;
+
+        let filters = {};
+        if (semester && semester !== 'all') filters.semester = semester;
+        if (type && type !== 'all') filters.type = type;
+        if (payment && payment !== 'all') filters.payment = payment;
+        if (registered && registered !== 'all') filters.registered = registered === 'true';
+
+        const students = await Student.find(filters);
+        res.status(200).json({ success: true, data: students });
+    } catch (error) {
+        console.error('Error fetching students:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to fetch students', details: error.message });
+    }
+});
+
+/**
+ * API: Update Single Student Registration Status
+ */
+app.post('/students/register/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { registered } = req.body;
+
+        if (registered === undefined) {
+            return res.status(400).json({ success: false, error: 'Registration status is required' });
+        }
+
+        // If registration is successful, set the registration date
+        const updateData = {
+            registered,
+        };
+
+        // If student is registered, update the registration date
+        if (registered) {
+            updateData.registration_date = new Date();
+        }
+
+        await Student.findByIdAndUpdate(id, updateData);
+
+        res.status(200).json({ success: true, message: 'Student registration status updated successfully' });
+    } catch (error) {
+        console.error('Error updating student registration:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to update student registration', details: error.message });
+    }
+});
+
+/**
+ * API: Bulk Register Students Based on Filters
+ */
+app.post('/students/register-bulk', async (req, res) => {
+    try {
+        const { semester, type, payment } = req.body;
+
+        let filters = {};
+        if (semester && semester !== 'all') filters.semester = semester;
+        if (type && type !== 'all') filters.type = type;
+        if (payment && payment !== 'all') filters.payment = payment;
+
+        // Update the students and set the registration date
+        await Student.updateMany(filters, {
+            registered: true,
+            registration_date: new Date(),  // Set registration date for all matched students
+        });
+
+        res.status(200).json({ success: true, message: 'Bulk registration completed successfully' });
+    } catch (error) {
+        console.error('Error during bulk registration:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to register students in bulk', details: error.message });
+    }
+});
+
+// **Admit Card Routes**
+
+// Fetch Admit Cards with Student Data
+app.get('/api/admit-cards', async (req, res) => {
+    try {
+      const admitCards = await AdmitCard.aggregate([
+        {
+          $lookup: {
+            from: 'students', // The collection name for students
+            localField: 'student_id',
+            foreignField: 'student_id',
+            as: 'studentDetails',
+          },
+        },
+      ]);
+  
+      res.status(200).json({ success: true, data: admitCards });
+    } catch (error) {
+      console.error('Error fetching admit cards:', error);
+      res.status(500).json({ success: false, message: 'Server Error' });
+    }
+  });
+  
+  // Create a New Admit Card
+  app.post('/api/admit-cards', async (req, res) => {
+      const { student_id, exam_id } = req.body;
+    
+      try {
+          // Check if the student exists
+          const student = await Student.findOne({ student_id });
+          if (!student) {
+              return res.status(404).json({ success: false, message: 'Student not found' });
+          }
+    
+          // Generate a unique admit card ID
+          const admit_card_id = `AC-${student_id}-${Date.now()}`;
+    
+          // Create a new Admit Card
+          const newAdmitCard = new AdmitCard({
+              admit_card_id,
+              student_id,
+              exam_id,
+              verification_status: false,
+          });
+    
+          await newAdmitCard.save();
+          res.status(201).json({ success: true, data: newAdmitCard });
+      } catch (error) {
+          console.error('Error creating admit card:', error);
+          res.status(500).json({ success: false, message: 'Server Error' });
+      }
+  });
 
 // ** Connect to Database **
 connectDB();
