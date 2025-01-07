@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const connectDB = require('./db/dbConnection');
@@ -272,6 +273,59 @@ app.post('/students/register-bulk', async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to register students in bulk', details: error.message });
     }
 });
+
+// **Admit Card Routes**
+
+// Fetch Admit Cards with Student Data
+app.get('/api/admit-cards', async (req, res) => {
+    try {
+      const admitCards = await AdmitCard.aggregate([
+        {
+          $lookup: {
+            from: 'students', // The collection name for students
+            localField: 'student_id',
+            foreignField: 'student_id',
+            as: 'studentDetails',
+          },
+        },
+      ]);
+  
+      res.status(200).json({ success: true, data: admitCards });
+    } catch (error) {
+      console.error('Error fetching admit cards:', error);
+      res.status(500).json({ success: false, message: 'Server Error' });
+    }
+  });
+  
+  // Create a New Admit Card
+  app.post('/api/admit-cards', async (req, res) => {
+      const { student_id, exam_id } = req.body;
+    
+      try {
+          // Check if the student exists
+          const student = await Student.findOne({ student_id });
+          if (!student) {
+              return res.status(404).json({ success: false, message: 'Student not found' });
+          }
+    
+          // Generate a unique admit card ID
+          const admit_card_id = `AC-${student_id}-${Date.now()}`;
+    
+          // Create a new Admit Card
+          const newAdmitCard = new AdmitCard({
+              admit_card_id,
+              student_id,
+              exam_id,
+              verification_status: false,
+          });
+    
+          await newAdmitCard.save();
+          res.status(201).json({ success: true, data: newAdmitCard });
+      } catch (error) {
+          console.error('Error creating admit card:', error);
+          res.status(500).json({ success: false, message: 'Server Error' });
+      }
+  });
 
 // **Connect to Database**
 connectDB();
