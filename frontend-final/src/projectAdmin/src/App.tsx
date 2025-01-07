@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import MainContent from './components/MainContent';
-import Header from './components/Header';
+import Sidebar from './components/Sidebar.tsx';
+import MainContent from './components/MainContent.tsx';
+import Header from './components/Header.tsx';
 
 function App() {
   return (

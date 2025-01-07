@@ -18,7 +18,7 @@ const RecordsArchives = () => {
     const fetchAdmitCards = async () => {
       try {
         const response = await axios.get('http://localhost:8000/api/admit-cards');
-        setAdmitCards(response.data);
+        setAdmitCards(response.data.data); // Updated to match the backend response structure
       } catch (error) {
         console.error('Error fetching admit cards:', error);
       }
@@ -42,33 +42,31 @@ const RecordsArchives = () => {
   }, []);
 
   // Filter Admit Cards based on selected filters
-  const filteredAdmitCards = admitCards.filter((card: any) => {
-    const semesterMatch = filters.semester === 'all' || card.semester === parseInt(filters.semester);
-    const typeMatch = filters.type === 'all' || card.type.toLowerCase() === filters.type.toLowerCase();
+  const filteredAdmitCards = admitCards.filter((card) => {
+    const semesterMatch =
+      filters.semester === 'all' || card.studentDetails.semester === filters.semester;
+    const typeMatch = filters.type === 'all' || card.type?.toLowerCase() === filters.type.toLowerCase();
     return semesterMatch && typeMatch;
   });
 
   // Download Admit Card as PDF
-  const handleDownloadAdmitCard = (card: any) => {
-    if (!card.verification_status) {
-      alert('Verification status not verified. Cannot download admit card.');
-      return;
-    }
-
+  const handleDownloadAdmitCard = (card) => {
     const doc = new jsPDF();
+
     doc.setFontSize(16);
     doc.text('Admit Card', 105, 20, { align: 'center' });
 
     doc.setFontSize(12);
-    doc.text(`Name: ${card.name}`, 20, 40);
-    doc.text(`Roll Number: ${card.rollNumber}`, 20, 50);
-    doc.text(`Exams Allowed:`, 20, 60);
+    doc.text(`Admit Card ID: ${card.admit_card_id}`, 20, 40);
+    doc.text(`Student Name: ${card.studentDetails.username}`, 20, 50);
+    doc.text(`Email: ${card.studentDetails.email}`, 20, 60);
+    doc.text(`Course ID: ${card.studentDetails.course_id}`, 20, 70);
+    doc.text(`Semester: ${card.studentDetails.semester}`, 20, 80);
+    doc.text(`Attendance: ${card.studentDetails.attendance}%`, 20, 90);
+    doc.text(`Verification Status: ${card.verification_status ? 'Verified' : 'Not Verified'}`, 20, 100);
+    doc.text(`Issue Date: ${new Date(card.issue_date).toLocaleDateString()}`, 20, 110);
 
-    card.exams.forEach((exam: string, index: number) => {
-      doc.text(`- ${exam}`, 25, 70 + index * 10);
-    });
-
-    doc.save(`AdmitCard_${card.rollNumber}.pdf`);
+    doc.save(`AdmitCard_${card.studentDetails.student_id}.pdf`);
   };
 
   return (
@@ -160,24 +158,24 @@ const RecordsArchives = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredAdmitCards.map((card: any) => (
+                    {filteredAdmitCards.map((card) => (
                       <tr
-                        key={card.id}
+                        key={card.admit_card_id}
                         className="hover:bg-gray-50 transition-colors duration-150"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">{card.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{card.rollNumber}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{card.semester}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{card.studentDetails.username}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{card.studentDetails.student_id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{card.studentDetails.semester}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{card.type}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${
-                              card.status === 'Released'
+                              card.verification_status
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}
                           >
-                            {card.status}
+                            {card.verification_status ? 'Verified' : 'Not Verified'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -196,7 +194,7 @@ const RecordsArchives = () => {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
-              {previousQuestions.map((question: any) => (
+              {previousQuestions.map((question) => (
                 <div
                   key={question.id}
                   className="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-300"

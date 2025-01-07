@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Dashboard from '../pages/Dashboard';
-import ExamRegistration from '../pages/ExamRegistration';
-import ExamSchedule from '../pages/ExamSchedule';
-import RecordsArchives from '../pages/RecordsArchives';
-import DeclareResult from '../pages/DeclareResult';
-import ErrorLog from '../pages/ErrorLog';
+import Dashboard from '../pages/Dashboard.tsx';
+import ExamRegistration from '../pages/ExamRegistration.tsx';
+import ExamSchedule from '../pages/ExamSchedule.tsx';
+import RecordsArchives from '../pages/RecordsArchives.tsx';
+import DeclareResult from '../pages/DeclareResult.tsx';
+import ErrorLog from '../pages/ErrorLog.tsx';
 
 const MainContent = () => {
   return (

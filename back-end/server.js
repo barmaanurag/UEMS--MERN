@@ -57,14 +57,13 @@ app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        // Check for admin credentials
         if (username === 'virat' && password === '90516897') {
             const token = jwt.sign({ role: 'admin', username }, 'yourSecretKey', { expiresIn: '1h' });
             return res.status(200).json({
                 success: true,
                 message: 'Admin login successful',
                 token,
-                redirectUrl: '/admin-dashboard',
+                redirectUrl: '/admin-dashboard', // Ensure this matches the frontend route
             });
         }
         if (username === 'jaisu' && password === '79800255') {
@@ -73,11 +72,10 @@ app.post('/login', async (req, res) => {
                 success: true,
                 message: 'Admin login successful',
                 token,
-                redirectUrl: '/admin-dashboard',
+                redirectUrl: '/admin-dashboard', // Ensure this matches the frontend route
             });
         }
 
-        // If credentials are not for admin
         return res.status(401).json({ success: false, error: 'Invalid username or password' });
     } catch (error) {
         console.error('Error during login:', error.message);
@@ -253,24 +251,45 @@ app.get('/students', async (req, res) => {
     try {
         const { semester, type, payment, registered } = req.query;
 
+        // Build filters dynamically based on query parameters
         let filters = {};
         if (semester && semester !== 'all') filters.semester = semester;
         if (type && type !== 'all') filters.type = type;
         if (payment && payment !== 'all') filters.payment = payment;
         if (registered && registered !== 'all') filters.registered = registered === 'true';
 
-        const students = await Student.find(filters);
+        // Fetch students based on filters
+        const students = await Student.find(filters, {
+            student_id: 1,
+            username: 1,
+            email: 1,
+            course_id: 1,
+            semester: 1,
+            attendance: 1,
+            payment: 1,
+            type: 1,
+            registered: 1,
+            registration_date: 1,
+            status: 1,
+        });
+
         res.status(200).json({ success: true, data: students });
     } catch (error) {
         console.error('Error fetching students:', error.message);
-        res.status(500).json({ success: false, error: 'Failed to fetch students', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch students',
+            details: error.message,
+        });
     }
 });
+
+
 
 /**
  * API: Update Single Student Registration Status
  */
-app.post('/students/register/:id', async (req, res) => {
+app.post('/students/register/student_id', async (req, res) => {
     try {
         const { id } = req.params;
         const { registered } = req.body;
@@ -279,22 +298,37 @@ app.post('/students/register/:id', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Registration status is required' });
         }
 
-        // If registration is successful, set the registration date
+        // Prepare update data
         const updateData = {
             registered,
         };
 
-        // If student is registered, update the registration date
+        // If registering the student, set the registration date
         if (registered) {
             updateData.registration_date = new Date();
         }
 
-        await Student.findByIdAndUpdate(id, updateData);
+        // Update the student's record
+        const updatedStudent = await Student.findByIdAndUpdate(id, updateData, {
+            new: true, // Return the updated document
+        });
 
-        res.status(200).json({ success: true, message: 'Student registration status updated successfully' });
+        if (!updatedStudent) {
+            return res.status(404).json({ success: false, error: 'Student not found' });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Student registration status updated successfully',
+            data: updatedStudent, // Return updated student data
+        });
     } catch (error) {
         console.error('Error updating student registration:', error.message);
-        res.status(500).json({ success: false, error: 'Failed to update student registration', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update student registration',
+            details: error.message,
+        });
     }
 });
 
@@ -310,71 +344,54 @@ app.post('/students/register-bulk', async (req, res) => {
         if (type && type !== 'all') filters.type = type;
         if (payment && payment !== 'all') filters.payment = payment;
 
-        // Update the students and set the registration date
-        await Student.updateMany(filters, {
+        // Update matched students and set the registration date
+        const updatedStudents = await Student.updateMany(filters, {
             registered: true,
-            registration_date: new Date(),  // Set registration date for all matched students
+            registration_date: new Date(), // Set registration date for matched students
         });
 
-        res.status(200).json({ success: true, message: 'Bulk registration completed successfully' });
+        // Fetch all updated students for response
+        const students = await Student.find(filters);
+
+        res.status(200).json({
+            success: true,
+            message: 'Bulk registration completed successfully',
+            data: students, // Return list of updated students
+        });
     } catch (error) {
         console.error('Error during bulk registration:', error.message);
-        res.status(500).json({ success: false, error: 'Failed to register students in bulk', details: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to register students in bulk',
+            details: error.message,
+        });
     }
 });
+// *Admit Card Routes*
 
-// **Admit Card Routes**
-
-// Fetch Admit Cards with Student Data
+/// Fetch Admit Cards with Student Data
 app.get('/api/admit-cards', async (req, res) => {
     try {
-      const admitCards = await AdmitCard.aggregate([
-        {
-          $lookup: {
-            from: 'students', // The collection name for students
-            localField: 'student_id',
-            foreignField: 'student_id',
-            as: 'studentDetails',
-          },
-        },
-      ]);
-  
-      res.status(200).json({ success: true, data: admitCards });
+        const admitCards = await AdmitCard.aggregate([
+            {
+                $lookup: {
+                    from: 'students', // Reference to the students collection
+                    localField: 'student_id', // Field in AdmitCard
+                    foreignField: 'student_id', // Field in Student
+                    as: 'studentDetails', // Merged data alias
+                },
+            },
+            {
+                $unwind: '$studentDetails', // Flatten the student details array
+            },
+        ]);
+
+        res.status(200).json({ success: true, data: admitCards });
     } catch (error) {
-      console.error('Error fetching admit cards:', error);
-      res.status(500).json({ success: false, message: 'Server Error' });
+        console.error('Error fetching admit cards:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
-  });
-  
-  // Create a New Admit Card
-  app.post('/api/admit-cards', async (req, res) => {
-      const { student_id, exam_id } = req.body;
-    
-      try {
-          // Check if the student exists
-          const student = await Student.findOne({ student_id });
-          if (!student) {
-              return res.status(404).json({ success: false, message: 'Student not found' });
-          }
-    
-          // Generate a unique admit card ID
-          const admit_card_id = `AC-${student_id}-${Date.now()}`;
-    
-          // Create a new Admit Card
-          const newAdmitCard = new AdmitCard({
-              admit_card_id,
-              student_id,
-              exam_id,
-              verification_status: false,
-          });
-    
-          await newAdmitCard.save();
-          res.status(201).json({ success: true, data: newAdmitCard });
-      } catch (error) {
-          console.error('Error creating admit card:', error);
-          res.status(500).json({ success: false, message: 'Server Error' });
-      }
-  });
+});
 
 // ** Connect to Database **
 connectDB();

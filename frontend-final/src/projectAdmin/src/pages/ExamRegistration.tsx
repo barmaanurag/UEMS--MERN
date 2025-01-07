@@ -3,14 +3,15 @@ import axios from 'axios';
 import { Search, Filter } from 'lucide-react';
 
 interface Student {
-  id: string;
-  name: string;
-  rollNumber: string;
-  semester: number;
+  student_id: string;
+  username: string;
+  password: string;
+  email: string;
+  course_id: string;
   attendance: number;
-  payment: string;
-  type: string;
-  registered: boolean;
+  registration_date: Date;
+  status: string;
+  semester: string;
 }
 
 const ExamRegistration = () => {
@@ -18,7 +19,7 @@ const ExamRegistration = () => {
     semester: 'all',
     type: 'all',
     payment: 'all',
-    registered: 'all'
+    registered: 'all',
   });
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,16 +40,21 @@ const ExamRegistration = () => {
   };
 
   /** Register Single Student */
-  const registerStudent = async (id: string) => {
+  const registerStudent = async (student_id: string) => {
+    if (!student_id) {
+      console.error('Invalid student ID');
+      return;
+    }
+
     try {
-      await axios.post(`http://localhost:8000/students/register/${id}`, { registered: true });
+      await axios.post(`http://localhost:8000/students/register/${student_id}`);
       fetchStudents(); // Refresh the list after registration
     } catch (error) {
       console.error('Error registering student:', error);
     }
   };
 
-  /**  Bulk Register Students */
+  /** Bulk Register Students */
   const bulkRegister = async () => {
     try {
       await axios.post('http://localhost:8000/students/register-bulk', {
@@ -60,6 +66,11 @@ const ExamRegistration = () => {
     } catch (error) {
       console.error('Error during bulk registration:', error);
     }
+  };
+
+  /** Handle Filter Change */
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>, filterKey: string) => {
+    setFilters({ ...filters, [filterKey]: e.target.value });
   };
 
   useEffect(() => {
@@ -81,9 +92,7 @@ const ExamRegistration = () => {
               <select
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 value={(filters as any)[filterKey]}
-                onChange={(e) =>
-                  setFilters({ ...filters, [filterKey]: e.target.value })
-                }
+                onChange={(e) => handleFilterChange(e, filterKey)}
               >
                 <option value="all">All</option>
                 {filterKey === 'semester' && (
@@ -139,25 +148,28 @@ const ExamRegistration = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Name
+                  Student ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Roll Number
+                  Username
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Semester
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Course ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Attendance
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Payment
+                  Semester
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Type
+                  Registration Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Registered
+                  Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Action
@@ -167,28 +179,23 @@ const ExamRegistration = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {students.map((student) => (
                 <tr
-                  key={student.id}
+                  key={student.student_id}
                   className="hover:bg-gray-50 transition-colors duration-150"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">{student.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.student_id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.username}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.course_id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.attendance}%</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.semester}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {student.rollNumber}
+                    {new Date(student.registration_date).toLocaleDateString()}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{student.status}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {student.semester}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {student.attendance}%
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{student.payment}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{student.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {student.registered ? 'Yes' : 'No'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {!student.registered && (
+                    {student.status !== 'registered' && (
                       <button
-                        onClick={() => registerStudent(student.id)}
+                        onClick={() => registerStudent(student.student_id)}
                         className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
                       >
                         Register

@@ -17,16 +17,16 @@ const LoginPage = () => {
         try {
             const response = await axios.post('http://localhost:8000/login', loginData);
             const { success, token, redirectUrl, message } = response.data;
-
+    
             if (success) {
-                // Save the admin token in localStorage
+                // Save the admin token
                 localStorage.setItem('adminAuthToken', token);
-
+    
                 // Clear error messages
                 setErrorMessage('');
-
+    
                 // Redirect to the admin dashboard
-                navigate(redirectUrl);
+                navigate(redirectUrl); // This will redirect based on the provided redirectUrl
             } else {
                 setErrorMessage(message);
             }
@@ -35,6 +35,7 @@ const LoginPage = () => {
             setErrorMessage('An error occurred during login.');
         }
     };
+    
 
     const handleLoginChange = (e) => {
         const { name, value } = e.target;

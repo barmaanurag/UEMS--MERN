@@ -6,7 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegistrationPage from './pages/RegistrationPage';
 import StudentLogin from './pages/studentrelated/StudentLogin';
 
-import AdminDashboard from './pages/adminrelated/AdminDashboard';
+import AdminDashboard from './projectAdmin/src/components/MainContent.tsx';
 import DashboardView from './projectStudent/src/components/DashboardView.tsx';
 
  // Update path to match your folder structure
