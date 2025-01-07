@@ -195,6 +195,84 @@ app.post('/log-error', async (req, res) => {
     }
 });
 
+/** 
+ * API: Fetch Students with Filters 
+ * Filters: semester, type, payment, registered
+ */
+app.get('/students', async (req, res) => {
+    try {
+        const { semester, type, payment, registered } = req.query;
+
+        let filters = {};
+        if (semester && semester !== 'all') filters.semester = semester;
+        if (type && type !== 'all') filters.type = type;
+        if (payment && payment !== 'all') filters.payment = payment;
+        if (registered && registered !== 'all') filters.registered = registered === 'true';
+
+        const students = await Student.find(filters);
+        res.status(200).json({ success: true, data: students });
+    } catch (error) {
+        console.error('Error fetching students:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to fetch students', details: error.message });
+    }
+});
+
+/**
+ * API: Update Single Student Registration Status
+ */
+app.post('/students/register/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { registered } = req.body;
+
+        if (registered === undefined) {
+            return res.status(400).json({ success: false, error: 'Registration status is required' });
+        }
+
+        // If registration is successful, set the registration date
+        const updateData = {
+            registered,
+        };
+
+        // If student is registered, update the registration date
+        if (registered) {
+            updateData.registration_date = new Date();
+        }
+
+        await Student.findByIdAndUpdate(id, updateData);
+
+        res.status(200).json({ success: true, message: 'Student registration status updated successfully' });
+    } catch (error) {
+        console.error('Error updating student registration:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to update student registration', details: error.message });
+    }
+});
+
+/**
+ * API: Bulk Register Students Based on Filters
+ */
+app.post('/students/register-bulk', async (req, res) => {
+    try {
+        const { semester, type, payment } = req.body;
+
+        let filters = {};
+        if (semester && semester !== 'all') filters.semester = semester;
+        if (type && type !== 'all') filters.type = type;
+        if (payment && payment !== 'all') filters.payment = payment;
+
+        // Update the students and set the registration date
+        await Student.updateMany(filters, {
+            registered: true,
+            registration_date: new Date(),  // Set registration date for all matched students
+        });
+
+        res.status(200).json({ success: true, message: 'Bulk registration completed successfully' });
+    } catch (error) {
+        console.error('Error during bulk registration:', error.message);
+        res.status(500).json({ success: false, error: 'Failed to register students in bulk', details: error.message });
+    }
+});
+
 // **Connect to Database**
 connectDB();
 
