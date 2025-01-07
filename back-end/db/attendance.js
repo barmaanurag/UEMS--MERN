@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const AttendanceSchema = new mongoose.Schema({
     attendance_id: { type: String, required: true, unique: true }, // Add attendance_id field
-    student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
-    exam_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ExamSchedule', required: true },
+    student_id: { type: String, required: true },
+    exam_id: { type: String, required: true },
     status: { type: String, required: true },
 });
 
