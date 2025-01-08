@@ -23,7 +23,7 @@ const ChooseUser = () => {
     } else if (role === "Student") {
       navigate("/student-login");
     } else if (role === "Teacher") {
-      navigate("/login");
+      navigate("/faculty-login");
     }
   };
 
