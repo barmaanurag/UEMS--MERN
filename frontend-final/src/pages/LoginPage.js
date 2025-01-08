@@ -16,7 +16,7 @@ const LoginPage = () => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:8000/login', loginData);
-            const { success, token, redirectUrl, message } = response.data;
+            const { success, token, message } = response.data;
     
             if (success) {
                 // Save the admin token
@@ -25,8 +25,8 @@ const LoginPage = () => {
                 // Clear error messages
                 setErrorMessage('');
     
-                // Redirect to the admin dashboard
-                navigate(redirectUrl); // This will redirect based on the provided redirectUrl
+                // Redirect to the desired URL
+                window.location.href = 'https://resonant-concha-fec0d1.netlify.app/';
             } else {
                 setErrorMessage(message);
             }

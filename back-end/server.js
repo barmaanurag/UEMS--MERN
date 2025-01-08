@@ -63,7 +63,7 @@ app.post('/login', async (req, res) => {
                 success: true,
                 message: 'Admin login successful',
                 token,
-                redirectUrl: '/admin-dashboard', // Ensure this matches the frontend route
+                redirectUrl: 'https://resonant-concha-fec0d1.netlify.app/', // Updated URL
             });
         }
         if (username === 'jaisu' && password === '79800255') {
@@ -72,7 +72,7 @@ app.post('/login', async (req, res) => {
                 success: true,
                 message: 'Admin login successful',
                 token,
-                redirectUrl: '/admin-dashboard', // Ensure this matches the frontend route
+                redirectUrl: 'https://resonant-concha-fec0d1.netlify.app/', // Updated URL
             });
         }
 
@@ -121,7 +121,7 @@ app.post('/student-login', async (req, res) => {
 
     try {
         // Hardcode the username and password for this scenario
-        if (username === 'johndoe' && password === 'password1234') {
+        if (username === 'johndoe' && password === 'password123') {
             return res.status(200).json({ success: true, message: 'Login successful' });
         } else {
             return res.status(401).json({ success: false, message: 'Invalid username or password' });
