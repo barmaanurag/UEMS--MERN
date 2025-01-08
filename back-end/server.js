@@ -132,6 +132,25 @@ app.post('/student-login', async (req, res) => {
     }
 });
 
+// Login endpoint
+// Backend Route
+app.post('/faculty-login', (req, res) => {
+    const { username, password } = req.body;
+
+    // Hardcoded username and password
+    if (username === 'mark johnson' && password === 'mark7524') {
+        return res.status(200).json({
+            success: true,
+            message: 'Login successful!',
+            redirectUrl: 'https://gilded-pastelito-b67253.netlify.app/'
+        });
+    } else {
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid username or password.',
+        });
+    }
+});
 
 
 // ** Faculty Routes **
