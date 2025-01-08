@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 const Sidebar = () => {
+
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: ClipboardList, label: 'Exam Registration', path: '/registration' },
@@ -18,10 +19,11 @@ const Sidebar = () => {
     { icon: Archive, label: 'Records & Archives', path: '/records' },
     { icon: Award, label: 'Declare Result', path: '/results' },
     { icon: AlertTriangle, label: 'Error Log', path: '/errors' },
+    
   ];
 
   return (
-    <div className="w-64 bg-gradient-to-b from-green-600 to-green-800 text-white shadow-lg transition-all duration-300 ease-in-out ">
+    <div className="w-64 bg-gradient-to-b from-green-600 to-green-800 text-white shadow-lg transition-all duration-300 ease-in-out">
       <div className="p-4">
         <h1 className="text-2xl font-bold">Admin Panel</h1>
       </div>
@@ -42,7 +44,7 @@ const Sidebar = () => {
         ))}
         <button
           className="flex items-center px-6 py-3 hover:bg-green-900 w-full mt-auto transition-all duration-200 rounded-lg"
-          onClick={() => {/* Add logout logic */}}
+          onClick={() => (window.location.href = 'https://polite-piroshki-5904f8.netlify.app/choose')}
         >
           <LogOut className="w-5 h-5 mr-3" />
           <span>Logout</span>
@@ -50,5 +52,6 @@ const Sidebar = () => {
       </nav>
     </div>
   );
-}
+};
+
 export default Sidebar;
