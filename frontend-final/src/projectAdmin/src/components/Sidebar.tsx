@@ -44,7 +44,7 @@ const Sidebar = () => {
         ))}
         <button
           className="flex items-center px-6 py-3 hover:bg-green-900 w-full mt-auto transition-all duration-200 rounded-lg"
-          onClick={() => (window.location.href = 'https://polite-piroshki-5904f8.netlify.app/choose')}
+          onClick={() => (window.location.href = 'http://localhost:3000/choose')}
         >
           <LogOut className="w-5 h-5 mr-3" />
           <span>Logout</span>
