@@ -63,7 +63,7 @@ app.post('/login', async (req, res) => {
                 success: true,
                 message: 'Admin login successful',
                 token,
-                redirectUrl: 'https://resonant-concha-fec0d1.netlify.app/', // Updated URL
+                redirectUrl: 'https://nimble-biscochitos-9bb123.netlify.app/', // Updated URL
             });
         }
         if (username === 'jaisu' && password === '79800255') {
@@ -72,7 +72,7 @@ app.post('/login', async (req, res) => {
                 success: true,
                 message: 'Admin login successful',
                 token,
-                redirectUrl: 'https://resonant-concha-fec0d1.netlify.app/', // Updated URL
+                redirectUrl: 'https://nimble-biscochitos-9bb123.netlify.app/', // Updated URL
             });
         }
 

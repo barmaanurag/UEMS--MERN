@@ -10,6 +10,7 @@ const StudentSchema = new mongoose.Schema({
     registration_date: { type: Date, default: Date.now },
     status: { type: String, default: 'active' },
     semester: { type: String, required: true },
+    exam_type: { type: String , required: true},
 });
 
 module.exports = mongoose.model('Student', StudentSchema);

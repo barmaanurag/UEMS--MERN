@@ -26,7 +26,7 @@ const LoginPage = () => {
                 setErrorMessage('');
     
                 // Redirect to the desired URL
-                window.location.href = 'https://resonant-concha-fec0d1.netlify.app/';
+                window.location.href = 'https://nimble-biscochitos-9bb123.netlify.app/';
             } else {
                 setErrorMessage(message);
             }
