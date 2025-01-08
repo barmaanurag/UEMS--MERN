@@ -16,8 +16,8 @@ const StudentLogin = () => {
             const { success, message } = response.data;
             if (success) {
                 console.log('Login Successful');
-                // Redirect to the route configured for DashboardView
-                navigate('/dashboard-view');
+                // Redirect to the external URL after successful login
+                window.location.href = 'https://rad-zabaione-4d49a1.netlify.app/';
             } else {
                 setErrorMessage(message); // Show error message from backend
             }
@@ -26,7 +26,7 @@ const StudentLogin = () => {
             setErrorMessage('Unable to log in. Please try again later.');
         }
     };
-
+    
     const handleLoginChange = (e) => {
         const { name, value } = e.target;
         setLoginData((prevData) => ({
