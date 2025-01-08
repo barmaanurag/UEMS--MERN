@@ -412,6 +412,7 @@ app.get('/api/admit-cards', async (req, res) => {
     }
 });
 
+
 // ** Connect to Database **
 connectDB();
 

@@ -42,7 +42,7 @@ const Sidebar = () => {
         ))}
         <button
           className="flex items-center px-6 py-3 hover:bg-green-900 w-full mt-auto transition-all duration-200 rounded-lg"
-          onClick={() => {/* Add logout logic */}}
+          onClick={() => {window.location.href=''}}
         >
           <LogOut className="w-5 h-5 mr-3" />
           <span>Logout</span>
